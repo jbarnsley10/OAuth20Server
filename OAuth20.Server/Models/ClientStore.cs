@@ -16,14 +16,14 @@ namespace OAuth20.Server.Models
         {
             new Client
             {
-                ClientName = "blazorWasm",
-                ClientId = "1",
-                ClientSecret = "123456789",
-                AllowedScopes = new[]{ "openid", "profile", "blazorWasmapi.readandwrite" },
+                ClientName = "LocalTestDomain",
+                ClientId = "21ac06dd-7306-4f7d-ab1e-e168814f2c12",
+                ClientSecret = "AabKL~juBGtf6k9f47gHBde5hfs87kjPQj32hdgh",
+                AllowedScopes = new[]{ "openid", "offline_access", "21ac06dd-7306-4f7d-ab1e-e168814f2c12" },
                 GrantType = GrantTypes.Code,
                 IsActive = true,
-                ClientUri = "https://localhost:7026",
-                RedirectUri = "https://localhost:7026/signin-oidc",
+                ClientUri = "https://localhost:19102",
+                RedirectUri = "https://localhost:19102/signin-oidc",
                 UsePkce = true,
             }
         };

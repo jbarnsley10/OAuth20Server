@@ -28,5 +28,6 @@ namespace OAuth20.Server.Models
         public string Nonce { get; set; }
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }
+        public string Username { get; set; }
     }
 }

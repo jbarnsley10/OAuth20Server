@@ -8,6 +8,9 @@ namespace OAuth20.Server.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "OAuth");
+
             migrationBuilder.AddColumn<string>(
                 name: "ClientId",
                 schema: "OAuth",

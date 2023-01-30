@@ -7,6 +7,7 @@
  */
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -27,6 +28,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OAuth20.Server.Services
 {
@@ -37,10 +39,12 @@ namespace OAuth20.Server.Services
         private readonly ICodeStoreService _codeStoreService;
         private readonly OAuthOptions _options;
         private readonly BaseDBContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public AuthorizeResultService(ICodeStoreService codeStoreService, IOptions<OAuthOptions> options, BaseDBContext context)
+        public AuthorizeResultService(ICodeStoreService codeStoreService, UserManager<AppUser> userManager, IOptions<OAuthOptions> options, BaseDBContext context)
         {
             _codeStoreService = codeStoreService;
+            _userManager = userManager;
             _options = options.Value;
             _context = context;
         }
@@ -108,7 +112,7 @@ namespace OAuth20.Server.Services
                 RequestedScopes = clientScopes.ToList(),
                 Nonce = nonce,
                 CodeChallenge = authorizationRequest.code_challenge,
-                CodeChallengeMethod = authorizationRequest.code_challenege_method,
+                CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
                 Subject = httpContextAccessor.HttpContext.User //as ClaimsPrincipal
 
@@ -171,7 +175,7 @@ namespace OAuth20.Server.Services
         }
 
 
-        public TokenResponse GenerateToken(TokenRequest tokenRequest)
+        public async Task<TokenResponse> GenerateTokenAsync(TokenRequest tokenRequest)
         {
 
             var result = new TokenResponse();
@@ -218,11 +222,26 @@ namespace OAuth20.Server.Services
                     return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
             }
 
+            // Lookup user
+            var foundUser = await _userManager.FindByEmailAsync(clientCodeChecker.Username);
+            if (foundUser == null)
+            {
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() };
+            }
+
             // Now here I will Issue the Id_token
 
             string id_token = string.Empty;
             if (clientCodeChecker.IsOpenId)
             {
+                var claimsTemp = new List<Claim>
+                {
+                    new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", foundUser.Id),
+                    new Claim("name", foundUser.UserName)
+                };
+                var user = new ClaimsPrincipal(new ClaimsIdentity(claimsTemp, "Basic", "name", "role"));
+                clientCodeChecker.Subject = user;
+
                 if (!clientCodeChecker.Subject.Identity.IsAuthenticated)
                     // I have to inform the caller to redirect the user to the login page
                     return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
@@ -249,8 +268,10 @@ namespace OAuth20.Server.Services
                     {
                         new Claim("sub", userId),
                         new Claim("given_name", currentUserName),
+                        new Claim("preferred_name", currentUserName),
                         new Claim("iat", iat.ToString(), ClaimValueTypes.Integer), // time stamp
-                        new Claim("nonce", clientCodeChecker.Nonce)
+                        new Claim("nonce", clientCodeChecker.Nonce),
+                        new Claim("tid", "common")
                     };
                 foreach (var amr in amrs)
                     claims.Add(new Claim("amr", amr));// authentication

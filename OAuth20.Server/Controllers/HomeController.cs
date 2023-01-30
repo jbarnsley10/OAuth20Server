@@ -12,6 +12,7 @@ using OAuth20.Server.OauthRequest;
 using OAuth20.Server.Services;
 using OAuth20.Server.Services.CodeServce;
 using OAuth20.Server.Services.Users;
+using System;
 using System.Threading.Tasks;
 
 namespace OAuth20.Server.Controllers
@@ -47,10 +48,17 @@ namespace OAuth20.Server.Controllers
 
             if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                var updateCodeResult = _codeStoreService.UpdatedClientDataByCode(result.Code, result.RequestedScopes);
+                var updateCodeResult = _codeStoreService.UpdatedClientDataByCode(result.Code, result.RequestedScopes, string.Empty);
                 if (updateCodeResult != null)
                 {
-                    result.RedirectUri = result.RedirectUri + "&code=" + result.Code;
+                    if (authorizationRequest.response_type == "code")
+                    {
+                        result.RedirectUri = result.RedirectUri.Replace("signin-oidc", "") + "/token&code=" + result.Code + "&redirectUri=" + result.RedirectUri;
+                    }
+                    else
+                    {
+                        result.RedirectUri = result.RedirectUri + "&code=" + result.Code;
+                    }
                     return Redirect(result.RedirectUri);
                 }
                 else
@@ -88,7 +96,7 @@ namespace OAuth20.Server.Controllers
 
             if (userLoginResult.Succeeded)
             {
-                var result = _codeStoreService.UpdatedClientDataByCode(loginRequest.Code, loginRequest.RequestedScopes);
+                var result = _codeStoreService.UpdatedClientDataByCode(loginRequest.Code, loginRequest.RequestedScopes, loginRequest.UserName);
                 if (result != null)
                 {
                     loginRequest.RedirectUri = loginRequest.RedirectUri + "&code=" + loginRequest.Code;
@@ -100,9 +108,9 @@ namespace OAuth20.Server.Controllers
         }
 
         [HttpPost]
-        public JsonResult Token(TokenRequest tokenRequest)
+        public async Task<JsonResult> Token(TokenRequest tokenRequest)
         {
-            var result = _authorizeResultService.GenerateToken(tokenRequest);
+            var result = await _authorizeResultService.GenerateTokenAsync(tokenRequest);
 
             if (result.HasError)
                 return Json(new
@@ -112,6 +120,13 @@ namespace OAuth20.Server.Controllers
                 });
 
             return Json(result);
+        }
+
+        [HttpGet]
+        public IActionResult Logout(string post_logout_redirect_uri)
+        {
+            this.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            return Redirect(post_logout_redirect_uri.Replace("signout-callback-oidc", ""));
         }
 
         public IActionResult Error(string error)
