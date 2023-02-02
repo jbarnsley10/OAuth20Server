@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  oauth20.server:
+    image: ${DOCKER_REGISTRY-}oauth20
+    build:
+      context: .
+      dockerfile: OAuth20.Server/Dockerfile

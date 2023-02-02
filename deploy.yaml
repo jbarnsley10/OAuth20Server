@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: oauth20-server
+  name: oauth20-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth20-server
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: oauth20-server
+    spec:
+      containers:
+      - image: myauth20:latest
+        name: myauth20
+        resources: {}
+        imagePullPolicy: Never

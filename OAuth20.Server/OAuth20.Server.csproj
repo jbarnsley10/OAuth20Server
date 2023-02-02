@@ -4,6 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>31120d56-28d1-4d0d-b367-fff0506e6809</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +24,12 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.24.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="PublicPrivateKey.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PublicPrivateKey.xml" />
+  </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties wwwroot_4jwks_1json__JsonSchema="array" /></VisualStudio></ProjectExtensions>
 
 </Project>

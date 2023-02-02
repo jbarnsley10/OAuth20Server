@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  oauth20.server:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80;https://+:7275
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    ports:
+      - "80"
+      - "443"
+      - "7275"
+    volumes:
+      - ~/.aspnet/https:/https:ro
+      - ~/.microsoft/usersecrets:/root/.microsoft/usersecrets:ro
