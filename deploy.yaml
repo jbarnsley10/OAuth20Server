@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: oauth20-server
-  name: oauth20-server
+    app: oauth20
+  name: oauth20
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: oauth20-server
+      app: oauth20
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: oauth20-server
+        app: oauth20
     spec:
       containers:
-      - image: myauth20:latest
-        name: myauth20
+      - image: oauth20:1.0.0
+        name: oauth20
         resources: {}
         imagePullPolicy: Never
