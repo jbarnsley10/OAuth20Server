@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using OAuth20.Server.Models.Entities;
 using OAuth20.Server.OauthRequest;
 using OAuth20.Server.OauthResponse;
@@ -12,11 +15,11 @@ namespace OAuth20.Server.Services
 {
     public class InMemoryUserManager : IInMemoryUserManager
     {
-        private IList<AppUser> userList = new List<AppUser>();
+        private List<AppUser> userList = new List<AppUser>();
 
         public InMemoryUserManager()
         {
-            userList.Add(new AppUser { Id = "1", UserName = "admin", Email = "admin@here.com", PasswordHash = "secretpassword" });
+            this.userList = this.ReadUsersFromFile("users.json");
         }
 
         public Task<AppUser> FindByIdAsync(string userId)
@@ -68,7 +71,20 @@ namespace OAuth20.Server.Services
                 return false;
             return true;
         }
-    }
 
+        private List<AppUser> ReadUsersFromFile(string filename)
+        {
+            var json = File.ReadAllText(filename);
+            var users = JsonConvert.DeserializeObject<List<AppUser>>(json);
+
+            // Copy password into correct property
+            foreach (var user in users)
+            {
+                user.PasswordHash = user.Password;
+            }
+
+            return users;
+        }
+    }
 }
 

@@ -77,7 +77,7 @@ namespace OAuth20.Server.Services.CodeServce
                     {
                         ClientId = oldValue.ClientId,
                         CreationTime = oldValue.CreationTime,
-                        IsOpenId = requestdScopes.Contains("openId") || requestdScopes.Contains("profile"),
+                        IsOpenId = requestdScopes.Contains("openid") || requestdScopes.Contains("profile"),
                         RedirectUri = oldValue.RedirectUri,
                         RequestedScopes = requestdScopes,
                         Nonce = oldValue.Nonce,

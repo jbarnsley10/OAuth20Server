@@ -6,11 +6,16 @@
  of this license document, but changing it is not allowed.
  */
 
+using System.Collections.Generic;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
 namespace OAuth20.Server.Models.Entities
 {
     public class AppUser : IdentityUser
     {
+        public IEnumerable<UserClaim> UserClaims = new List<UserClaim>();
+
+        public string Password { get; set; }
     }
 }

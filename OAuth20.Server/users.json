@@ -1,0 +1,28 @@
+[
+  {
+      "id": "1",
+      "username": "Peter Smith",
+      "email": "p.smith@here.com",
+      "password": "secretpassword",
+      "userClaims": [
+          { "type": "permission:read", "value": "some perm1" },
+          { "type": "permission:write", "value": "some perm2" }
+      ]
+  },
+  {
+    "id": "2",
+    "username": "James Brown",
+    "email": "j.brown@here.com",
+    "password": "secretpassword",
+    "userClaims": [
+      {
+        "type": "permission:read",
+        "value": "some perm3"
+      },
+      {
+        "type": "permission:write",
+        "value": "some perm4"
+      }
+    ]
+  }
+]

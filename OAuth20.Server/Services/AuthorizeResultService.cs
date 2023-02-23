@@ -232,12 +232,6 @@ namespace OAuth20.Server.Services
             string id_token = string.Empty;
             if (clientCodeChecker.IsOpenId)
             {
-                if (!clientCodeChecker.Subject.Identity.IsAuthenticated)
-                {
-                    // I have to inform the caller to redirect the user to the login page
-                    return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
-                }
-
                 var claimsTemp = new List<Claim>
                 {
                     new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", foundUser.Id),
@@ -245,6 +239,13 @@ namespace OAuth20.Server.Services
                 };
                 var user = new ClaimsPrincipal(new ClaimsIdentity(claimsTemp, "Basic", "name", "role"));
                 clientCodeChecker.Subject = user;
+
+
+                if (!clientCodeChecker.Subject.Identity.IsAuthenticated)
+                {
+                    // I have to inform the caller to redirect the user to the login page
+                    return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
+                }
 
                 var currentUserName = clientCodeChecker.Subject.Identity.Name;
 
@@ -270,10 +271,15 @@ namespace OAuth20.Server.Services
                         new Claim("given_name", currentUserName),
                         new Claim("preferred_name", currentUserName),
                         new Claim("iat", iat.ToString(), ClaimValueTypes.Integer), // time stamp
-                        new Claim("nonce", clientCodeChecker.Nonce)
+                        new Claim("nonce", clientCodeChecker.Nonce),
+                        new Claim("tid", "common")
                     };
                 foreach (var amr in amrs)
                     claims.Add(new Claim("amr", amr));// authentication
+
+                // User claims
+                foreach (var cl in foundUser.UserClaims)
+                    claims.Add(new Claim(cl.Type, cl.Value));
 
                 JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
