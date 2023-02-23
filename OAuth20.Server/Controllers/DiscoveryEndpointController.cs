@@ -14,7 +14,7 @@ namespace OAuth20.Server.Controllers
     public class DiscoveryEndpointController : Controller
     {
         // .well-known/openid-configuration
-        [HttpGet("~/.well-known/openid-configuration")]
+        [HttpGet("~/localtestdomain/.well-known/openid-configuration")]
         public JsonResult GetConfiguration()
         {
             var response = new DiscoveryResponse

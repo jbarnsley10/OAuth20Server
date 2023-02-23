@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using OAuth20.Server.OauthRequest;
 using OAuth20.Server.Services;
 using OAuth20.Server.Services.CodeServce;
-using OAuth20.Server.Services.Users;
 using System.Threading.Tasks;
 
 namespace OAuth20.Server.Controllers
@@ -22,15 +21,15 @@ namespace OAuth20.Server.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthorizeResultService _authorizeResultService;
         private readonly ICodeStoreService _codeStoreService;
-        private readonly IUserManagerService _userManagerService;
+        private readonly IInMemoryUserManager _userManager;
 
         public HomeController(IHttpContextAccessor httpContextAccessor, IAuthorizeResultService authorizeResultService,
-            ICodeStoreService codeStoreService, IUserManagerService userManagerService)
+            ICodeStoreService codeStoreService, IInMemoryUserManager userManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _authorizeResultService = authorizeResultService;
             _codeStoreService = codeStoreService;
-            _userManagerService = userManagerService;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
@@ -74,18 +73,15 @@ namespace OAuth20.Server.Controllers
         {
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Login(OpenIdConnectLoginRequest loginRequest)
         {
             // here I have to check if the username and passowrd is correct
             // and I will show you how to integrate the ASP.NET Core Identity
             // With our framework
-
             if (!loginRequest.IsValid())
                 return RedirectToAction("Error", new { error = "invalid_request" });
-            var userLoginResult = await _userManagerService.LoginUserByOpenIdAsync(loginRequest);
-
+            var userLoginResult = await _userManager.LoginUserByOpenIdAsync(loginRequest);
             if (userLoginResult.Succeeded)
             {
                 var result = _codeStoreService.UpdatedClientDataByCode(loginRequest.Code, loginRequest.RequestedScopes);
@@ -95,7 +91,6 @@ namespace OAuth20.Server.Controllers
                     return Redirect(loginRequest.RedirectUri);
                 }
             }
-
             return RedirectToAction("Error", new { error = "invalid_request" });
         }
 

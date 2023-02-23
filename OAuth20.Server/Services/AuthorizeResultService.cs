@@ -14,7 +14,6 @@ using OAuth20.Server.Common;
 using OAuth20.Server.Configuration;
 using OAuth20.Server.Helpers;
 using OAuth20.Server.Models;
-using OAuth20.Server.Models.Context;
 using OAuth20.Server.Models.Entities;
 using OAuth20.Server.OauthRequest;
 using OAuth20.Server.OauthResponse;
@@ -36,14 +35,13 @@ namespace OAuth20.Server.Services
         private readonly ClientStore _clientStore = new ClientStore();
         private readonly ICodeStoreService _codeStoreService;
         private readonly OAuthOptions _options;
-        private readonly BaseDBContext _context;
 
-        public AuthorizeResultService(ICodeStoreService codeStoreService, IOptions<OAuthOptions> options, BaseDBContext context)
+        public AuthorizeResultService(ICodeStoreService codeStoreService, IInMemoryUserManager userManager, IOptions<OAuthOptions> options)
         {
             _codeStoreService = codeStoreService;
             _options = options.Value;
-            _context = context;
         }
+
         public AuthorizeResponse AuthorizeRequest(IHttpContextAccessor httpContextAccessor, AuthorizationRequest authorizationRequest)
         {
             AuthorizeResponse response = new AuthorizeResponse();
@@ -274,8 +272,9 @@ namespace OAuth20.Server.Services
                     ExpirationDate = token.ValidTo, 
                     SubjectId = userId
                 };
-                _context.OAuthTokens.Add(idptoken);
-                _context.SaveChanges();
+                // TODO
+                //_context.OAuthTokens.Add(idptoken);
+                //_context.SaveChanges();
 
             }
 
@@ -297,8 +296,9 @@ namespace OAuth20.Server.Services
                 ExpirationDate = accessTokenResult.ExpirationDate
             };
 
-            _context.OAuthTokens.Add(atoken);
-            _context.SaveChanges();
+            // TODO
+            //_context.OAuthTokens.Add(atoken);
+            //_context.SaveChanges();
 
             // here remove the code from the Concurrent Dictionary
             _codeStoreService.RemoveClientDataByCode(tokenRequest.code);
