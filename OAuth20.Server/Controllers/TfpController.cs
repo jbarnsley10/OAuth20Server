@@ -28,7 +28,7 @@ namespace OAuth20.Server.Controllers
         public async Task<IActionResult> Index(TokenRequest tokenRequest)
         {
             var homeController = new HomeController(this.httpContextAccessor, this.authorizeResultService, this.codeStoreService, this.userManager);
-            return await Task.FromResult(homeController.Token(tokenRequest));
+            return await homeController.Token(tokenRequest);
         }
     }
 }

@@ -7,6 +7,7 @@
  */
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +27,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OAuth20.Server.Services
 {
@@ -35,11 +37,13 @@ namespace OAuth20.Server.Services
         private readonly ClientStore _clientStore = new ClientStore();
         private readonly ICodeStoreService _codeStoreService;
         private readonly OAuthOptions _options;
+        private readonly IInMemoryUserManager _userManager;
 
         public AuthorizeResultService(ICodeStoreService codeStoreService, IInMemoryUserManager userManager, IOptions<OAuthOptions> options)
         {
             _codeStoreService = codeStoreService;
             _options = options.Value;
+            _userManager = userManager;
         }
 
         public AuthorizeResponse AuthorizeRequest(IHttpContextAccessor httpContextAccessor, AuthorizationRequest authorizationRequest)
@@ -169,7 +173,7 @@ namespace OAuth20.Server.Services
         }
 
 
-        public TokenResponse GenerateToken(TokenRequest tokenRequest)
+        public async Task<TokenResponse> GenerateTokenAsync(TokenRequest tokenRequest)
         {
 
             var result = new TokenResponse();
@@ -216,14 +220,31 @@ namespace OAuth20.Server.Services
                     return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
             }
 
+            // Lookup user
+            var foundUser = await _userManager.FindByEmailAsync(clientCodeChecker.Username);
+            if (foundUser == null)
+            {
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() };
+            }
+
             // Now here I will Issue the Id_token
 
             string id_token = string.Empty;
             if (clientCodeChecker.IsOpenId)
             {
                 if (!clientCodeChecker.Subject.Identity.IsAuthenticated)
+                {
                     // I have to inform the caller to redirect the user to the login page
                     return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
+                }
+
+                var claimsTemp = new List<Claim>
+                {
+                    new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", foundUser.Id),
+                    new Claim("name", foundUser.UserName)
+                };
+                var user = new ClaimsPrincipal(new ClaimsIdentity(claimsTemp, "Basic", "name", "role"));
+                clientCodeChecker.Subject = user;
 
                 var currentUserName = clientCodeChecker.Subject.Identity.Name;
 
@@ -247,6 +268,7 @@ namespace OAuth20.Server.Services
                     {
                         new Claim("sub", userId),
                         new Claim("given_name", currentUserName),
+                        new Claim("preferred_name", currentUserName),
                         new Claim("iat", iat.ToString(), ClaimValueTypes.Integer), // time stamp
                         new Claim("nonce", clientCodeChecker.Nonce)
                     };

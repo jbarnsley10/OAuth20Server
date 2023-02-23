@@ -6,6 +6,7 @@
  of this license document, but changing it is not allowed.
  */
 
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using OAuth20.Server.OauthRequest;
 using OAuth20.Server.OauthResponse;
@@ -15,6 +16,6 @@ namespace OAuth20.Server.Services
     public interface IAuthorizeResultService
     {
         AuthorizeResponse AuthorizeRequest(IHttpContextAccessor httpContextAccessor, AuthorizationRequest authorizationRequest);
-        TokenResponse GenerateToken(TokenRequest tokenRequest);
+        Task<TokenResponse> GenerateTokenAsync(TokenRequest tokenRequest);
     }
 }

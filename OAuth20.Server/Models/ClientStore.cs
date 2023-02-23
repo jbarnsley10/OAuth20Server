@@ -16,14 +16,14 @@ namespace OAuth20.Server.Models
         {
             new Client
             {
-                ClientName = "localOAuth2",
+                ClientName = "LocalTestDomain",
                 ClientId = "21ac06dd-7306-4f7d-ab1e-e168814f2c12",
                 ClientSecret = "AabKL~juBGtf6k9f47gHBde5hfs87kjPQj32hdgh",
                 AllowedScopes = new[]{ "openid", "profile", "21ac06dd-7306-4f7d-ab1e-e168814f2c12" },
                 GrantType = GrantTypes.Code,
                 IsActive = true,
-                ClientUri = "https://localhost:7275",
-                RedirectUri = "https://localhost:7275/signin-oidc",
+                ClientUri = "https://localhost:19102",
+                RedirectUri = "https://localhost:19102/signin-oidc",
                 UsePkce = true,
             }
         };
